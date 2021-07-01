@@ -1,5 +1,4 @@
 const MyToken = artifacts.require("../Contracts/Token.sol");
 
 module.exports = function (deployer) {
-  deployer.deploy(MyToken, "Or the best", "OTB", 10**15);
-};
+  deployer.deploy(MyToken, "Phalanx The Best", "PTB", 10**15);};
