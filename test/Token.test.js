@@ -91,7 +91,7 @@ contract ("Token", (accounts) =>{
     })
     
     it("Test buy commissions TransferFrom", async() => {
-        let amount = 1000
+        let amount = 100000
         await token.addShopAddress(shop);
         await token.setBuyCommissionPrecentage(3000)
         let bbb = await token.balanceOf(shop)
@@ -104,7 +104,7 @@ contract ("Token", (accounts) =>{
         let bankBalance = await token.balanceOf(bank)
         let balance = await token.balanceOf(nonOwner)
         console.log("nonOwner balance: " + balance)
-        assert.equal(bankBalance, '201800', "Test commision balance")
+        assert.equal(bankBalance, '231500', "Test commision balance")
     })
 
     it("Test sell commissions TransferFrom", async() => {
@@ -120,6 +120,6 @@ contract ("Token", (accounts) =>{
         let bankBalance = await token.balanceOf(bank)
         let balance = await token.balanceOf(nonOwner)
         console.log("nonOwner balance: " + balance)
-        assert.equal(bankBalance, '202000', "Test commision balance")
+        assert.equal(bankBalance, '231700', "Test commision balance")
     })
 })
