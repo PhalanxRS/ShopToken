@@ -217,7 +217,7 @@ library SafeMath {
 
 // File: node_modules\openzeppelin-solidity\contracts\utils\Context.sol
 
-
+// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -244,7 +244,7 @@ abstract contract Context {
 
 // File: node_modules\openzeppelin-solidity\contracts\token\ERC20\IERC20.sol
 
-
+// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -323,13 +323,6 @@ interface IERC20 {
 }
 
 // File: node_modules\openzeppelin-solidity\contracts\math\SafeMath.sol
-
-
-
-
-// File: openzeppelin-solidity\contracts\token\ERC20\ERC20.sol
-
-
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -637,8 +630,6 @@ contract ERC20 is Context, IERC20 {
 
 // File: openzeppelin-solidity\contracts\access\Ownable.sol
 
-
-
 pragma solidity >=0.6.0 <0.8.0;
 
 /**
@@ -707,7 +698,6 @@ abstract contract Ownable is Context {
 
 // File: contracts\token.sol
 
-
 pragma solidity >=0.6.0 <0.8.0;
 
 
@@ -715,13 +705,13 @@ pragma solidity >=0.6.0 <0.8.0;
 
 contract Token is ERC20, Ownable{
     mapping(address => bool) shopAddresses;
-    uint buyCommissionPrecentage;
-    uint sellCommissionPrecentage;
+    uint public buyCommissionPrecentage;
+    uint public sellCommissionPrecentage;
     address bank;
-    constructor(string memory _TokenName, string memory _TokenSymbol, uint256 limitMint) ERC20(_TokenName, _TokenSymbol) 
+    constructor(string memory _TokenName, string memory _TokenSymbol, uint256 _decimals) ERC20(_TokenName, _TokenSymbol) 
     public
     {
-        _mint(msg.sender, limitMint);
+        _mint(msg.sender, 10 ** _decimals);
         buyCommissionPrecentage = 1000;
         sellCommissionPrecentage = 1000;
     }
@@ -771,18 +761,38 @@ contract Token is ERC20, Ownable{
         if (shopAddresses[recipient])
         {
             uint256 senderBalance = balanceOf(_msgSender());
-            require(senderBalance >= amount * (10000+sellCommissionPrecentage) / 10000, "Not enough funds for commission or total transfer");
+            require(senderBalance >= amount.mul(sellCommissionPrecentage.add(10000)).div(10000), "Not enough funds for commission or total transfer");
             _transfer(_msgSender(), recipient, amount);
-            _transfer(_msgSender(), bank, amount * sellCommissionPrecentage / 10000);
+            _transfer(_msgSender(), bank, amount.mul(sellCommissionPrecentage).div(10000));
         }
         else if (shopAddresses[_msgSender()]) 
         {
             _transfer(_msgSender(), recipient, amount);
-            _transfer(recipient, bank, amount * buyCommissionPrecentage / 10000);
+            _transfer(recipient, bank, amount.mul(buyCommissionPrecentage).div(10000));
         }
         else
         {
             _transfer(_msgSender(), recipient, amount);
+        }
+        return true;
+    }
+
+
+    //override for the ERC20 transfer function to add commissions
+    function transferFrom(address sender, address recipient, uint256 amount) public virtual override(ERC20) returns (bool) {
+        if (shopAddresses[recipient] && _msgSender() == recipient)
+        {
+            _transfer(sender, recipient, amount);
+            _transfer(sender, bank, amount.mul(sellCommissionPrecentage).div(10000));
+            //_approve(recipient, sender, allowance(recipient,sender).add(amount));
+            //_approve(bank, sender, allowance(bank,sender).add(amount));
+        }
+        else if (shopAddresses[sender] && _msgSender() == sender) 
+        {
+            _transfer(sender, recipient, amount);
+            _transfer(recipient, bank, amount.mul(buyCommissionPrecentage).div(10000));
+            //_approve(sender, recipient, allowance(sender,recipient).sub(amount, "ERC20: transfer amount exceeds allowance"));
+            //_approve(bank, recipient, allowance(bank, recipient).sub(amount.mul(buyCommissionPrecentage).div(10000), "ERC20: transfer amount exceeds allowance"));
         }
         return true;
     }
