@@ -782,19 +782,20 @@ contract Token is ERC20, Ownable{
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override(ERC20) returns (bool) {
         if (shopAddresses[recipient])
         {
-            _transfer(sender, recipient, amount);
+            _transfer(sender, recipient, amount.mul(SafeMath.sub(10000,sellCommissionPrecentage)).div(10000));
             _transfer(sender, bank, amount.mul(sellCommissionPrecentage).div(10000));
-            _approve(recipient, _msgSender(), allowance(recipient,_msgSender()).sub(amount.add(amount.mul(sellCommissionPrecentage).div(10000)), "ERC20: transfer amount exceeds allowance"));
-            //_approve(recipient, sender, allowance(recipient,sender).add(amount));
-            //_approve(bank, sender, allowance(bank,sender).add(amount));
+            _approve(sender, _msgSender(), allowance(sender,_msgSender()).sub(amount, "ERC20: transfer amount exceeds allowance (SELL)"));
         }
         else if (shopAddresses[sender]) 
         {
+            _transfer(sender, recipient, amount.mul(SafeMath.sub(10000,buyCommissionPrecentage)).div(10000));
+            _transfer(sender, bank, amount.mul(buyCommissionPrecentage).div(10000));
+            _approve(sender, _msgSender(), allowance(sender,_msgSender()).sub(amount, "ERC20: transfer amount exceeds allowance (BUY)"));
+        }
+        else
+        {
             _transfer(sender, recipient, amount);
-            _transfer(recipient, bank, amount.mul(buyCommissionPrecentage).div(10000));
-            _approve(sender, _msgSender(), allowance(sender,_msgSender()).add(amount));
-            //_approve(sender, recipient, allowance(sender,recipient).sub(amount, "ERC20: transfer amount exceeds allowance"));
-            //_approve(bank, recipient, allowance(bank, recipient).sub(amount.mul(buyCommissionPrecentage).div(10000), "ERC20: transfer amount exceeds allowance"));
+            _approve(sender, _msgSender(), allowance(sender,_msgSender()).sub(amount, "ERC20: transfer amount exceeds allowance (DEFAULT)"));
         }
         return true;
     }

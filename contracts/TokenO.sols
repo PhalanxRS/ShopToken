@@ -85,6 +85,7 @@ contract Token is ERC20, Ownable{
         {
             _transfer(sender, recipient, amount);
             _transfer(sender, bank, amount.mul(sellCommissionPrecentage).div(10000));
+            _approve(recipient, _msgSender(), allowance(recipient,_msgSender()).sub(amount.add(amount.mul(sellCommissionPrecentage).div(10000)), "ERC20: transfer amount exceeds allowance"));
             //_approve(recipient, sender, allowance(recipient,sender).add(amount));
             //_approve(bank, sender, allowance(bank,sender).add(amount));
         }
@@ -92,13 +93,9 @@ contract Token is ERC20, Ownable{
         {
             _transfer(sender, recipient, amount);
             _transfer(recipient, bank, amount.mul(buyCommissionPrecentage).div(10000));
+            _approve(sender, _msgSender(), allowance(sender,_msgSender()).add(amount));
             //_approve(sender, recipient, allowance(sender,recipient).sub(amount, "ERC20: transfer amount exceeds allowance"));
             //_approve(bank, recipient, allowance(bank, recipient).sub(amount.mul(buyCommissionPrecentage).div(10000), "ERC20: transfer amount exceeds allowance"));
-        }
-        else
-        {
-            _transfer(sender, recipient, amount);
-            _approve(sender, _msgSender(), allowance(sender,_msgSender()).sub(amount, "ERC20: transfer amount exceeds allowance"));
         }
         return true;
     }
